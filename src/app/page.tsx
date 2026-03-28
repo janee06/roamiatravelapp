@@ -47,6 +47,7 @@ export default function HomePage() {
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [resetMode, setResetMode] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -130,6 +131,29 @@ export default function HomePage() {
     } catch (error: any) { alert("Chyba: " + error.message); }
     finally { setAuthLoading(false); }
   };
+
+  const handleResetPassword = async () => {
+  if (!loginEmail) {
+    alert("Zadejte email");
+    return;
+  }
+
+  setAuthLoading(true);
+
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
+  redirectTo: "https://roamiatravelapp.vercel.app/reset-password"});
+
+    if (error) throw error;
+
+    alert("Email pro reset hesla byl odeslán!");
+    setResetMode(false);
+  } catch (error: any) {
+    alert("Chyba: " + error.message);
+  } finally {
+    setAuthLoading(false);
+  }
+};
 
   const handleLogout = async () => { await supabase.auth.signOut(); setUser(null); };
 
@@ -441,11 +465,13 @@ export default function HomePage() {
         {showLoginForm && (
           <motion.div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="bg-[#111936] rounded-2xl p-8 max-w-md w-full mx-4" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
-              <h2 className="text-2xl font-bold mb-6 text-center">{isSignUp ? "Vytvořit účet" : "Přihlášení"}</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center"> {resetMode ? "Reset hesla" : isSignUp ? "Vytvořit účet" : "Přihlášení"}</h2>
               <input type="email" placeholder="Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className="w-full mb-3 bg-[#0B132B] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-orange-400"/>
               <input type="password" placeholder="Heslo" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="w-full mb-6 bg-[#0B132B] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-orange-400"/>
-              <button onClick={handleAuthSubmit} disabled={authLoading} className="w-full bg-orange-500 py-2 rounded-lg font-semibold hover:bg-orange-600 transition mb-3">{authLoading ? "Čekám..." : isSignUp ? "Vytvořit účet" : "Přihlásit se"}</button>
-              <button onClick={() => setIsSignUp(!isSignUp)} className="w-full mb-3">{isSignUp ? "Už máte účet? Přihlaste se" : "Nemáte účet? Zaregistrujte se"}</button>
+              {!isSignUp && !resetMode && (
+                <button onClick={() => setResetMode(true)} className="w-full text-sm text-orange-400 mb-3"> Zapomenuté heslo? </button> )}
+              <button onClick={resetMode ? handleResetPassword : handleAuthSubmit} disabled={authLoading} className="w-full bg-orange-500 py-2 rounded-lg font-semibold hover:bg-orange-600 transition mb-3"> {authLoading ? "Čekám..." : resetMode ? "Odeslat reset email" : isSignUp ? "Vytvořit účet" : "Přihlásit se"} </button>
+              <button onClick={() => { setIsSignUp(!isSignUp); setResetMode(false); }} className="w-full mb-3" > {isSignUp ? "Už máte účet? Přihlaste se" : "Nemáte účet? Zaregistrujte se"} </button>
               <button onClick={() => setShowLoginForm(false)} className="w-full">Zavřít</button>
             </motion.div>
           </motion.div>
