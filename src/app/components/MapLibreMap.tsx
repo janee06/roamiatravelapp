@@ -60,21 +60,20 @@ const MapLibreMap: React.FC<MapProps> = ({ center, zoom, tips, userLocation }) =
     );
   }, []);
 
-  useEffect(() => {
-    if (!mapRef.current || !userLocation) return;
+ useEffect(() => {
+  if (!mapRef.current || !center) return;
 
-    const [lng, lat] = userLocation;
-    if (isNaN(lng) || isNaN(lat)) return;
+  const [lng, lat] = center;
+  if (isNaN(lng) || isNaN(lat)) return;
 
-    mapRef.current.flyTo({
-      center: [lng, lat],
-      zoom: 14,
-      speed: 1.2,
-      essential: true
-    });
-  }, [userLocation]);
+  mapRef.current.flyTo({
+    center: [lng, lat],
+    zoom: 14,
+    speed: 1.2,
+    essential: true,
+  });
+}, [center]);
 
-  // ---- ADD/UPDATE MARKERS ----
   useEffect(() => {
     if (!mapRef.current) return;
 
