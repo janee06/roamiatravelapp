@@ -51,7 +51,8 @@ export default function HomePage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [filterCategory, setFilterCategory] = useState("Vše");
+  const [filterRating, setFilterRating] = useState(0);
   const [tipForm, setTipForm] = useState({ name: "", location: "", rating: 3, category: "Kavárna" });
   const [mapCenter, setMapCenter] = useState<[number, number]>([14.4378, 50.0755]);
   const [mapZoom] = useState<number>(12);
@@ -74,6 +75,16 @@ export default function HomePage() {
     return () => subscription?.unsubscribe();
   }, []);
 
+  const filteredTips = tips.filter((tip) => {
+  const matchCategory =
+    filterCategory === "Vše" || tip.category === filterCategory;
+
+  const matchRating =
+    tip.rating >= filterRating;
+
+  return matchCategory && matchRating;
+  });
+
   // FETCH TIPS
   useEffect(() => {
     const fetchTips = async () => {
@@ -95,6 +106,12 @@ export default function HomePage() {
       return () => navigator.geolocation.clearWatch(watchId);
     }
   }, []);
+
+  useEffect(() => {
+  if (userLocation) {
+    setMapCenter(userLocation);
+  }
+  }, [userLocation]);
 
   // GEOCODE HELPER
   async function geocodeLocation(location: string) {
@@ -155,7 +172,21 @@ export default function HomePage() {
   }
 };
 
-  const handleLogout = async () => { await supabase.auth.signOut(); setUser(null); };
+    const handleLogout = async () => { 
+      await supabase.auth.signOut(); 
+      setUser(null);
+
+      // 🔽 RESET ITINERÁŘE
+      setDays([
+        { 
+          id: "1", 
+          dayNumber: 1, 
+          activities: [
+            { id: "a1", time: "09:00", name: "", location: "" }
+          ] 
+        },
+      ]);
+    };
 
   // PŘIDÁNÍ TIPŮ
   const handleAddTip = async () => {
@@ -399,8 +430,37 @@ export default function HomePage() {
           <h2 className="text-4xl font-bold mb-4">NECHTE SE INSPIROVAT OSTATNÍMI</h2>
           <p className="text-white/70 mb-12">Tipy od skutečných cestovatelů. Prozkoumejte mapu, objevte místní poklady a sdílejte své vlastní objevy.</p>
 
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+  
+          {/* Kategorie */}
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="bg-[#111936] border border-white/10 px-3 py-2 rounded-lg text-white"
+          >
+            <option>Vše</option>
+            <option>Kavárna</option>
+            <option>Restaurace</option>
+            <option>Muzeum</option>
+            <option>Park</option>
+            <option>Jiné</option>
+          </select>
+
+          {/* Hodnocení */}
+          <select
+            value={filterRating}
+            onChange={(e) => setFilterRating(Number(e.target.value))}
+            className="bg-[#111936] border border-white/10 px-3 py-2 rounded-lg text-white"
+          >
+            <option value={0}>Všechna hodnocení</option>
+            <option value={3}>⭐ 3+</option>
+            <option value={4}>⭐ 4+</option>
+            <option value={5}>⭐ 5</option>
+          </select>
+        </div>
+
           <div className="rounded-2xl mb-6 overflow-hidden">
-            <MapLibre center={mapCenter} zoom={mapZoom} tips={tips} />
+            <MapLibre center={mapCenter} zoom={mapZoom} tips={filteredTips} />
           </div>
 
           {user && (
@@ -427,7 +487,7 @@ export default function HomePage() {
           </AnimatePresence>
 
           <div className="space-y-4 text-left">
-           {tips.length > 0 ? tips.map(tip => (
+           {filteredTips.length > 0 ? filteredTips.map(tip => (
             <motion.div
               key={tip.id}
               className="bg-[#111936] p-4 rounded-xl flex justify-between items-start"

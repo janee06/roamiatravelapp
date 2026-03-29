@@ -109,7 +109,7 @@ export default function ResetPasswordPage() {
         placeholder="Nové heslo"
         value={newPassword}
         onChange={(e) => setNewPassword(e.target.value)}
-        className="px-4 py-2 rounded-lg mb-4 text-black w-full max-w-sm"
+        className="px-4 py-2 rounded-lg mb-4 text-black bg-white w-full max-w-sm"
       />
 
       <input
