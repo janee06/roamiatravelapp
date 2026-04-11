@@ -47,8 +47,8 @@ export default function HomePage() {
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  const [resetMode, setResetMode] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showResetForm, setShowResetForm] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [filterCategory, setFilterCategory] = useState("Vše");
@@ -88,7 +88,7 @@ export default function HomePage() {
   // FETCH TIPS
   useEffect(() => {
     const fetchTips = async () => {
-      const { data, error } = await supabase.from("tips").select("*");
+      const { data, error } = await supabase.from("tips").select("*").order("created_at", { ascending: false }).limit(50);
       if (error) console.error("Error fetching tips:", error);
       else setTips(data || []);
     };
@@ -164,7 +164,6 @@ export default function HomePage() {
     if (error) throw error;
 
     alert("Email pro reset hesla byl odeslán!");
-    setResetMode(false);
   } catch (error: any) {
     alert("Chyba: " + error.message);
   } finally {
@@ -364,13 +363,43 @@ export default function HomePage() {
             <img src="/ROAMIA.png" alt="Logo" className="h-10 w-auto object-contain"/>
           </div>
           <div className="flex items-center gap-3 sm:gap-6">
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => scrollToSection("itinerary")} className="text-sm hover:text-orange-400">Itinerář</motion.button>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => scrollToSection("tips")} className="text-sm hover:text-orange-400">Tipy</motion.button>
-            {user ? (
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleLogout} className="bg-red-500 px-4 py-2 rounded-full text-sm font-semibold hover:bg-red-600">Log out</motion.button>
-            ) : (
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setShowLoginForm(true)} className="bg-orange-500 px-4 py-2 rounded-full text-sm font-semibold hover:bg-orange-600">Log in</motion.button>
-            )}
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => scrollToSection("itinerary")} className="cursor-pointer text-sm hover:text-orange-400">Itinerář</motion.button>
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => scrollToSection("tips")} className="cursor-pointer text-sm hover:text-orange-400">Tipy</motion.button>
+           {user ? (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleLogout}
+              className="cursor-pointer bg-red-500 px-4 py-2 rounded-full text-sm font-semibold hover:bg-red-600"
+            >
+              Log out
+            </motion.button>
+          ) : (
+            <div className="flex gap-2">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setIsSignUp(false);
+                  setShowLoginForm(true);
+                }}
+                className="cursor-pointer bg-orange-500 px-4 py-2 rounded-full text-sm font-semibold hover:bg-orange-600">
+                Přihlášení
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setIsSignUp(true);
+                  setShowLoginForm(true);
+                }}
+                className="cursor-pointer bg-orange-400 px-4 py-2 rounded-full text-sm font-semibold hover:bg-orange-500"
+              >
+                Registrace
+              </motion.button>
+            </div>
+          )}
           </div>
         </div>
       </nav>
@@ -382,8 +411,8 @@ export default function HomePage() {
          <h1 className="text-3xl sm:text-5xl font-bold mb-6">NAPLÁNUJTE SI<br />SVOU DOVOLENOU</h1>
           <p className="text-white/80 mb-10 text-sm sm:text-base">Vytvářejte krásné itineráře, objevujte skryté poklady od ostatních cestovatelů a proměňte své cestovatelské sny ve skutečnost.</p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => scrollToSection("itinerary")} className="bg-orange-500 px-6 py-3 rounded-full font-semibold hover:bg-orange-600">Začít plánovat</motion.button>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => scrollToSection("tips")} className="bg-orange-500/30 px-6 py-3 rounded-full font-semibold hover:bg-orange-500/50">Prozkoumat tipy</motion.button>
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => scrollToSection("itinerary")} className="cursor-pointer bg-orange-500 px-6 py-3 rounded-full font-semibold hover:bg-orange-600">Začít plánovat</motion.button>
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => scrollToSection("tips")} className="cursor-pointer bg-orange-500/30 px-6 py-3 rounded-full font-semibold hover:bg-orange-500/50">Prozkoumat tipy</motion.button>
           </div>
         </motion.div>
       </section>
@@ -400,7 +429,7 @@ export default function HomePage() {
               <motion.div key={day.id} className="bg-[#111936] rounded-2xl p-6 text-left" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-lg">Den {day.dayNumber}</h3>
-                  {days.length > 1 && <button onClick={() => removeDay(day.id)} className="text-red-500 hover:text-red-400 text-sm font-semibold">Smazat den</button>}
+                  {days.length > 1 && <button onClick={() => removeDay(day.id)} className="cursor-pointer text-red-500 hover:text-red-400 text-sm font-semibold">Smazat den</button>}
                 </div>
                 <div className="space-y-3 mb-4">
                   {day.activities.length > 0 ? day.activities.map(activity => (
@@ -408,15 +437,15 @@ export default function HomePage() {
                       <input type="time" value={activity.time} onChange={e => updateActivity(day.id, activity.id, "time", e.target.value)} className="w-20 bg-[#0B132B] text-orange-400 text-sm outline-none"/>
                       <input type="text" value={activity.name} onChange={e => updateActivity(day.id, activity.id, "name", e.target.value)} placeholder="Aktivita" className="flex-1 bg-transparent text-white outline-none text-sm"/>
                       <input type="text" value={activity.location} onChange={e => updateActivity(day.id, activity.id, "location", e.target.value)} placeholder="Lokace" className="w-32 bg-transparent text-white/60 outline-none text-sm"/>
-                      <button onClick={() => removeActivity(day.id, activity.id)} className="text-red-500 hover:text-red-400 font-semibold text-sm">✕</button>
+                      <button onClick={() => removeActivity(day.id, activity.id)} className="cursor-pointer text-red-500 hover:text-red-400 font-semibold text-sm">✕</button>
                     </motion.div>
                   )) : <p className="text-white/40 text-sm">Zatím žádné aktivity</p>}
                 </div>
-                <button onClick={() => addActivity(day.id)} className="w-full border border-dashed border-white/30 py-3 rounded-xl text-white/60 hover:border-orange-400 hover:text-orange-400">+ Přidat aktivitu</button>
+                <button onClick={() => addActivity(day.id)} className="cursor-pointer w-full border border-dashed border-white/30 py-3 rounded-xl text-white/60 hover:border-orange-400 hover:text-orange-400">+ Přidat aktivitu</button>
               </motion.div>
             ))}
-            <button onClick={addDay} className="w-full bg-orange-500 py-4 rounded-xl font-semibold hover:bg-orange-600 mt-6">+ Přidat den</button>
-            <button onClick={saveItinerary} className="w-full bg-orange-500 py-4 rounded-xl font-semibold hover:bg-orange-600 mt-4">
+            <button onClick={addDay} className="cursor-pointer w-full bg-orange-500 py-4 rounded-xl font-semibold hover:bg-orange-600 mt-6">+ Přidat den</button>
+            <button onClick={saveItinerary} className="cursor-pointer w-full bg-orange-500 py-4 rounded-xl font-semibold hover:bg-orange-600 mt-4">
               Uložit itinerář
             </button>
           </div>
@@ -464,7 +493,7 @@ export default function HomePage() {
           </div>
 
           {user && (
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setShowTipForm(!showTipForm)} className="bg-orange-500 px-4 py-2 rounded-full text-sm font-semibold hover:bg-orange-600 mb-6">
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setShowTipForm(!showTipForm)} className="cursor-pointer bg-orange-500 px-4 py-2 rounded-full text-sm font-semibold hover:bg-orange-600 mb-6">
               {showTipForm ? "Zrušit přidání tipu" : "+ Přidat tip"}
             </motion.button>
           )}
@@ -479,8 +508,8 @@ export default function HomePage() {
                 </select>
                 <input type="number" min={1} max={5} value={tipForm.rating} onChange={e => setTipForm({ ...tipForm, rating: parseInt(e.target.value) })} className="w-full mb-3 bg-[#0B132B] border border-white/10 rounded-lg px-3 py-2 text-white placeholder-white/40 outline-none focus:border-orange-400"/>
                 <div className="flex gap-2">
-                  <button onClick={handleAddTip} disabled={loading} className="flex-1 bg-orange-500 py-2 rounded-lg font-semibold hover:bg-orange-600 transition">{loading ? "Přidávám..." : "Přidat"}</button>
-                  <button onClick={() => setShowTipForm(false)} className="flex-1 border border-white/20 py-2 rounded-lg hover:border-white/40">Zrušit</button>
+                  <button onClick={handleAddTip} disabled={loading} className="cursor-pointer flex-1 bg-orange-500 py-2 rounded-lg font-semibold hover:bg-orange-600 transition">{loading ? "Přidávám..." : "Přidat"}</button>
+                  <button onClick={() => setShowTipForm(false)} className="cursor-pointer flex-1 border border-white/20 py-2 rounded-lg hover:border-white/40">Zrušit</button>
                 </div>
               </motion.div>
             )}
@@ -506,7 +535,7 @@ export default function HomePage() {
               {user && user.id === tip.user_id && (
                 <button
                   onClick={() => handleDeleteTip(tip.id)}
-                  className="text-red-400 hover:text-red-500 text-sm font-semibold"
+                  className="cursor-pointer text-red-400 hover:text-red-500 text-sm font-semibold"
                 >
                   Smazat
                 </button>
@@ -525,14 +554,58 @@ export default function HomePage() {
         {showLoginForm && (
           <motion.div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="bg-[#111936] rounded-2xl p-8 max-w-md w-full mx-4" initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }}>
-              <h2 className="text-2xl font-bold mb-6 text-center"> {resetMode ? "Reset hesla" : isSignUp ? "Vytvořit účet" : "Přihlášení"}</h2>
+              <h2 className="text-2xl font-bold mb-6 text-center"> {isSignUp ? "Vytvořit účet" : "Přihlášení"} </h2>
               <input type="email" placeholder="Email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className="w-full mb-3 bg-[#0B132B] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-orange-400"/>
               <input type="password" placeholder="Heslo" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="w-full mb-6 bg-[#0B132B] border border-white/10 rounded-lg px-3 py-2 text-white outline-none focus:border-orange-400"/>
-              {!isSignUp && !resetMode && (
-                <button onClick={() => setResetMode(true)} className="w-full text-sm text-orange-400 mb-3"> Zapomenuté heslo? </button> )}
-              <button onClick={resetMode ? handleResetPassword : handleAuthSubmit} disabled={authLoading} className="w-full bg-orange-500 py-2 rounded-lg font-semibold hover:bg-orange-600 transition mb-3"> {authLoading ? "Čekám..." : resetMode ? "Odeslat reset email" : isSignUp ? "Vytvořit účet" : "Přihlásit se"} </button>
-              <button onClick={() => { setIsSignUp(!isSignUp); setResetMode(false); }} className="w-full mb-3" > {isSignUp ? "Už máte účet? Přihlaste se" : "Nemáte účet? Zaregistrujte se"} </button>
-              <button onClick={() => setShowLoginForm(false)} className="w-full">Zavřít</button>
+              <button
+              onClick={() => { setIsSignUp(false); setShowLoginForm(false); setShowResetForm(true);}} className="cursor-pointer w-full text-sm text-orange-400 mb-3"> Zapomenuté heslo?
+              </button>
+              <button onClick={handleAuthSubmit} disabled={authLoading} className="cursor-pointer w-full bg-orange-500 py-2 rounded-lg font-semibold hover:bg-orange-600 transition mb-3" > {authLoading ? "Čekám..." : isSignUp ? "Vytvořit účet" : "Přihlásit se"} </button>
+              <button onClick={() => setShowLoginForm(false)} className="cursor-pointer w-full">Zavřít</button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showResetForm && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-[#111936] rounded-2xl p-8 max-w-md w-full mx-4"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+            >
+              <h2 className="text-2xl font-bold mb-6 text-center">
+                Reset hesla
+              </h2>
+
+              <input
+                type="email"
+                placeholder="Email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                className="w-full mb-6 bg-[#0B132B] border border-white/10 rounded-lg px-3 py-2 text-white"
+              />
+
+              <button
+                onClick={handleResetPassword}
+                className="cursor-pointer w-full bg-orange-500 py-2 rounded-lg font-semibold hover:bg-orange-600 mb-3"
+              >
+                Odeslat reset email
+              </button>
+
+              <button
+                onClick={() => setShowResetForm(false)}
+                className="cursor-pointer w-full text-sm text-white/60"
+              >
+                Zpět
+              </button>
             </motion.div>
           </motion.div>
         )}

@@ -4,3 +4,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(1) brightness(2);
   opacity: 1;
 }
+button {
+  cursor: pointer;
+}
