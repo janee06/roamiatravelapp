@@ -20,7 +20,6 @@ export default function ResetPasswordPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔑 Načtení tokenu z URL (SAFE pro Next.js build)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
@@ -79,7 +78,6 @@ export default function ResetPasswordPage() {
     }
   };
 
-  // 🔴 čekáme než se načte token
   if (token === null) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#0B132B] text-white">
@@ -88,7 +86,7 @@ export default function ResetPasswordPage() {
     );
   }
 
-  // ❌ token neexistuje
+  // token neexistuje
   if (!token) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#0B132B] text-white px-4">
@@ -109,7 +107,7 @@ export default function ResetPasswordPage() {
         placeholder="Nové heslo"
         value={newPassword}
         onChange={(e) => setNewPassword(e.target.value)}
-        className="px-4 py-2 rounded-lg mb-4 text-black bg-white w-full max-w-sm"
+        className="px-4 py-2 rounded-lg mb-4 text-black bg-[#243d87] w-full max-w-sm"
       />
 
       <input
@@ -117,7 +115,7 @@ export default function ResetPasswordPage() {
         placeholder="Potvrzení hesla"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
-        className="px-4 py-2 rounded-lg mb-4 text-black w-full max-w-sm"
+        className="bg-[#243d87] px-4 py-2 rounded-lg mb-4 text-black w-full max-w-sm"
       />
 
       <button
