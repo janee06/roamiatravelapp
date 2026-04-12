@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 const MapLibre = dynamic(() => import("./components/MapLibreMap"), { ssr: false });
 
@@ -132,26 +133,26 @@ export default function HomePage() {
 
   // AUTH HANDLERS 
   const handleAuthSubmit = async () => {
-    if (!loginEmail || !loginPassword) { alert("Vyplňte prosím email a heslo"); return; }
+    if (!loginEmail || !loginPassword) { toast.error("Vyplňte prosím email a heslo"); return; }
     setAuthLoading(true);
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({ email: loginEmail, password: loginPassword });
         if (error) throw error;
-        alert("Účet vytvořen! Nyní se můžete přihlásit.");
+        toast.success("Účet vytvořen!");
         setIsSignUp(false);
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
         if (error) throw error;
         setLoginEmail(""); setLoginPassword(""); setShowLoginForm(false);
       }
-    } catch (error: any) { alert("Chyba: " + error.message); }
+    } catch (error: any) { toast.error("Chyba: " + error.message); }
     finally { setAuthLoading(false); }
   };
 
   const handleResetPassword = async () => {
   if (!loginEmail) {
-    alert("Zadejte email");
+    toast.error("Zadejte email");
     return;
   }
 
@@ -163,7 +164,7 @@ export default function HomePage() {
 
     if (error) throw error;
 
-    alert("Email pro reset hesla byl odeslán!");
+    toast.success("Email odeslán!");
   } catch (error: any) {
     alert("Chyba: " + error.message);
   } finally {
@@ -189,13 +190,13 @@ export default function HomePage() {
 
   // PŘIDÁNÍ TIPŮ
   const handleAddTip = async () => {
-    if (!user) { alert("Musíte být přihlášeni!"); return; }
-    if (!tipForm.name || !tipForm.location) { alert("Vyplňte prosím všechna pole"); return; }
+    if (!user) { toast.error("Musíte být přihlášeni!"); return; }
+    if (!tipForm.name || !tipForm.location) { toast.error("Vyplňte prosím všechna pole"); return; }
 
     setLoading(true);
     try {
       const coords = await geocodeLocation(tipForm.location);
-      if (!coords) { alert("Nepodařilo se najít lokaci"); setLoading(false); return; }
+      if (!coords) {  toast.error("Lokace nenalezena"); setLoading(false); return; }
 
       const insertObj = {
         user_id: user.id,
@@ -213,7 +214,7 @@ export default function HomePage() {
       setTips(prev => [...prev, ...(data || [])]);
       setTipForm({ name: "", location: "", rating: 3, category: "Kavárna" });
       setShowTipForm(false);
-      alert("Tip byl úspěšně přidán!");
+      toast.success("Tip přidán!");
     } catch (err) { console.error(err); alert("Neočekávaná chyba"); }
     finally { setLoading(false); }
   };
@@ -224,7 +225,7 @@ export default function HomePage() {
     if (!confirm("Opravdu chcete tento tip smazat?")) return;
 
     const { error } = await supabase.from("tips").delete().eq("id", tipId);
-    if (error) { console.error(error); alert("Nepodařilo se smazat tip"); return; }
+    if (error) { console.error(error); toast.error("Nepodařilo se smazat tip"); return; }
     setTips(prev => prev.filter(t => t.id !== tipId));
   };
 
@@ -308,8 +309,8 @@ export default function HomePage() {
         if (activitiesToInsert.length > 0) await supabase.from("activities").insert(activitiesToInsert);
       }
 
-      alert("Itinerář uložen!");
-    } catch (err) { console.error(err); alert("Chyba při ukládání itineráře"); }
+      toast.success("Itinerář uložen!");
+    } catch (err) { console.error(err); toast.error("Chyba při ukládání"); }
   };
 
   // NAČÍTÁNÍ ITINERÁŘE Z DB 

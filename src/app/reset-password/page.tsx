@@ -99,7 +99,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0B132B] text-white px-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0e1937] text-white px-4">
       <h1 className="text-2xl font-bold mb-4">Reset hesla</h1>
 
       <input
@@ -107,7 +107,7 @@ export default function ResetPasswordPage() {
         placeholder="Nové heslo"
         value={newPassword}
         onChange={(e) => setNewPassword(e.target.value)}
-        className="px-4 py-2 rounded-lg mb-4 text-black bg-[#243d87] w-full max-w-sm"
+        className="px-4 py-2 rounded-lg mb-4 text-black bg-[#0a1023] w-full max-w-sm"
       />
 
       <input
@@ -115,7 +115,7 @@ export default function ResetPasswordPage() {
         placeholder="Potvrzení hesla"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
-        className="bg-[#243d87] px-4 py-2 rounded-lg mb-4 text-black w-full max-w-sm"
+        className="bg-[#0a1023] px-4 py-2 rounded-lg mb-4 text-black w-full max-w-sm"
       />
 
       <button
