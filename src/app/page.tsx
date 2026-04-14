@@ -6,6 +6,26 @@ import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
+function translateError(message: string) {
+  if (message.includes("Invalid login credentials")) {
+    return "Nesprávný email nebo heslo";
+  }
+
+  if (message.includes("User already registered")) {
+    return "Uživatel už existuje";
+  }
+
+  if (message.includes("Password should be at least")) {
+    return "Heslo musí mít alespoň 6 znaků";
+  }
+
+  if (message.includes("Invalid email")) {
+    return "Neplatný email";
+  }
+
+  return "Došlo k chybě, zkuste to znovu";
+}
+
 const MapLibre = dynamic(() => import("./components/MapLibreMap"), { ssr: false });
 
 const supabase = createClient(
@@ -146,7 +166,7 @@ export default function HomePage() {
         if (error) throw error;
         setLoginEmail(""); setLoginPassword(""); setShowLoginForm(false);
       }
-    } catch (error: any) { toast.error("Chyba: " + error.message); }
+    } catch (error: any) { toast.error(translateError(error.message)); }
     finally { setAuthLoading(false); }
   };
 
@@ -166,7 +186,7 @@ export default function HomePage() {
 
     toast.success("Email odeslán!");
   } catch (error: any) {
-    alert("Chyba: " + error.message);
+    toast.error(translateError(error.message));
   } finally {
     setAuthLoading(false);
   }
@@ -209,13 +229,13 @@ export default function HomePage() {
       };
 
       const { data, error } = await supabase.from("tips").insert([insertObj]).select();
-      if (error) { console.error(error); alert("Chyba při přidávání tipu"); setLoading(false); return; }
+      if (error) { console.error(error); toast.error(translateError(error.message)); setLoading(false); return; }
 
       setTips(prev => [...prev, ...(data || [])]);
       setTipForm({ name: "", location: "", rating: 3, category: "Kavárna" });
       setShowTipForm(false);
       toast.success("Tip přidán!");
-    } catch (err) { console.error(err); alert("Neočekávaná chyba"); }
+    } catch (err) { console.error(err); toast.error(translateError("Neočekávaná chyba")); }
     finally { setLoading(false); }
   };
 
