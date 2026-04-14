@@ -23,6 +23,14 @@ function translateError(message: string) {
     return "Neplatný email";
   }
 
+  if (message.includes("Email not confirmed")) {
+    return "Email není potvrzený";
+  }
+
+  if (message.includes("Too many requests")) {
+    return "Příliš mnoho pokusů, zkuste to později";
+  }
+
   return "Došlo k chybě, zkuste to znovu";
 }
 
@@ -110,7 +118,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchTips = async () => {
       const { data, error } = await supabase.from("tips").select("*").order("created_at", { ascending: false }).limit(50);
-      if (error) console.error("Error fetching tips:", error);
+      if (error) console.error("Chyba při ukládání tipů:", error);
       else setTips(data || []);
     };
     fetchTips();
@@ -121,7 +129,7 @@ export default function HomePage() {
     if ("geolocation" in navigator) {
       const watchId = navigator.geolocation.watchPosition(
         (position) => setUserLocation([position.coords.longitude, position.coords.latitude]),
-        (error) => console.error("Error getting location:", error),
+        (error) => console.error("Nepodařilo se získat polohu:", error),
         { enableHighAccuracy: true }
       );
       return () => navigator.geolocation.clearWatch(watchId);
@@ -235,7 +243,7 @@ export default function HomePage() {
       setTipForm({ name: "", location: "", rating: 3, category: "Kavárna" });
       setShowTipForm(false);
       toast.success("Tip přidán!");
-    } catch (err) { console.error(err); toast.error(translateError("Neočekávaná chyba")); }
+    } catch (err) { console.error(err); toast.error("Neočekávaná chyba"); }
     finally { setLoading(false); }
   };
 
@@ -393,7 +401,7 @@ export default function HomePage() {
               onClick={handleLogout}
               className="cursor-pointer bg-red-500 px-4 py-2 rounded-full text-sm font-semibold hover:bg-red-600"
             >
-              Log out
+              Odhlásit se
             </motion.button>
           ) : (
             <div className="flex gap-2">
