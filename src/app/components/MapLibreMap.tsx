@@ -8,6 +8,8 @@ export interface Tip {
   id: string;
   name: string;
   location: string;
+  rating: number;
+  category: string;
   lat?: number | null | string;
   lng?: number | null | string;
 }
@@ -97,10 +99,14 @@ const MapLibreMap: React.FC<MapProps> = ({ center, zoom, tips, userLocation }) =
       const marker = new maplibregl.Marker({ element: markerEl, anchor: "center" })
         .setLngLat([lng, lat])
         .setPopup(
-          new maplibregl.Popup({ offset: 15 }).setHTML(
-          `<span style="color:black">${tip.name} • ${tip.location}</span>`
+          new maplibregl.Popup({ offset: 15 }).setHTML(`
+            <div style="color:black; font-size:14px; line-height:1.4;">
+              <div style="font-weight:600; font-size:15px;">${tip.name}</div>
+              <div>${tip.category} • ${"⭐".repeat(Math.max(0, Math.min(5, tip.rating)))}</div>
+              <div style="color:#666; font-size:12px;">${tip.location}</div>
+            </div>
+            `)
           )
-        )
         .addTo(mapRef.current!);
 
       markersRef.current.push(marker);
